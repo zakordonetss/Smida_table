@@ -2,9 +2,16 @@ import { Router } from "express";
 import { InfoHistoryService } from "../services/InfoHistoryService";
 
 const infoHistoryService = new InfoHistoryService();
-infoHistoryService.setHistoryInfo();
+infoHistoryService.setHistory();
 
 export const HistoryController = Router()
     .get('/history', (req, res) => {
-        res.status(200).send(infoHistoryService.history)
+        const history = infoHistoryService.filterHistory(req.query);
+        if (history) res.status(200).send(history);
+        else res.status(404).send('History not found');
+    })
+    .delete('/history/:id', async (req, res) => {
+        const { id } = req.params;
+        const result = await infoHistoryService.deleteHistoryById(id);
+        if (result) res.status(200).send('The data deleted successfully');
     })
