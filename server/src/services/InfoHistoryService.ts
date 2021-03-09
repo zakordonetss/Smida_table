@@ -23,9 +23,7 @@ export class InfoHistoryService {
             if (index === -1) throw new Error("Invalid idReport");
             this._history.splice(index, 1);
 
-            writeFile(this._infoHistoryFilePath, JSON.stringify(this._history), (err) => {
-                if (err) throw new Error("Error during writting file");
-            });
+            this._writeHistory(this._history);
 
             return true;
         } catch (err) {
@@ -84,6 +82,57 @@ export class InfoHistoryService {
 
         return result;
     }
+
+    public postHistory({
+        publicationType,
+        termType,
+        reportGroup,
+        reportState,
+        reportFormat,
+        date,
+        outputNumber,
+    }: IPostPublication): boolean {
+        try {
+            if (!publicationType ||
+                !termType ||
+                !reportGroup ||
+                !reportState ||
+                !reportFormat ||
+                !date ||
+                !outputNumber) {
+                    throw new Error("Invalid history data");
+                }
+            
+            const maxIdReport = Math.max(...this._history.map((item) => item.idReport));
+
+            const newPost: IPublication = {
+                idReport: maxIdReport + 1,
+                publicationType: publicationType,
+                termType: termType,
+                reportGroup: reportGroup,
+                reportState: reportState,
+                reportFormat: reportFormat,
+                outputDate: {
+                    date: date,
+                },
+                outputNumber: outputNumber,
+            }
+
+            this._history.push(newPost);
+            this._writeHistory(this._history);
+            return true;
+
+        } catch (err) {
+            if (err instanceof Error) throw err;
+			else throw new Error('Error during posting.');
+        }
+    }
+
+    private _writeHistory(obj: IPublication[]): void {
+        writeFile(this._infoHistoryFilePath, JSON.stringify(obj), (err) => {
+                if (err) throw new Error("Error during writing file");
+        });
+    }
 };
 
 export interface IPublication {
@@ -108,4 +157,14 @@ export interface IFilter {
     outputDateStart?: string;
     outputDateEnd?: string;
     outputNumber?: number | string;
+}
+
+export interface IPostPublication {
+    publicationType?: string;
+    termType?: string;
+    reportGroup?: string;
+    reportState?: string;
+    reportFormat?: string;
+    date?: string;
+    outputNumber?: number;
 }

@@ -10,8 +10,12 @@ export const HistoryController = Router()
         if (history) res.status(200).send(history);
         else res.status(404).send('History not found');
     })
-    .delete('/history/:id', async (req, res) => {
+    .delete('/history/:id', (req, res) => {
         const { id } = req.params;
-        const result = await infoHistoryService.deleteHistoryById(id);
+        const result = infoHistoryService.deleteHistoryById(id);
         if (result) res.status(200).send('The data deleted successfully');
+    })
+    .post('/history', (req, res) => {
+        const result = infoHistoryService.postHistory(req.query);
+        if (result) res.status(200).send('History has been posted successfully');
     })
